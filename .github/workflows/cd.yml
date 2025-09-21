@@ -63,7 +63,7 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy new Docker image" \
             --parameters 'commands=[
-              "echo GITHUB_SHA=${{IMAGE_TAG}} | sudo tee -a /home/ubuntu/.env",
+              "echo GITHUB_SHA=$IMAGE_TAG | sudo tee -a /home/ubuntu/.env",
               "echo Starting deployment with image tag: $IMAGE_TAG",
               "sudo chmod +x /home/ubuntu/deploy.sh",
               "sudo /home/ubuntu/deploy.sh $IMAGE_TAG"
