@@ -55,15 +55,17 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
+          AWS_EC2_ID: ${{ secrets.AWS_EC2_ID }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           aws ssm send-command \
-            --targets "Key=instanceIds,Values=${{AWS_EC2_ID}}" \
+            --targets "Key=instanceIds,Values=$AWS_EC2_ID" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy new Docker image" \
             --parameters 'commands=[
-              "sudo sh -c '\''echo GITHUB_SHA=${{IMAGE_TAG}} >> /home/ubuntu/.env'\''",
-              "echo Starting deployment with image tag: ${{IMAGE_TAG}}",
+              "sudo sh -c '\''echo GITHUB_SHA=$IMAGE_TAG >> /home/ubuntu/.env'\''",
+              "echo Starting deployment with image tag: $IMAGE_TAG",
               "sudo chmod +x /home/ubuntu/deploy.sh",
-              "sudo /home/ubuntu/deploy.sh ${{IMAGE_TAG}}"
+              "sudo /home/ubuntu/deploy.sh $IMAGE_TAG"
             ]' \
             --region $AWS_REGION
