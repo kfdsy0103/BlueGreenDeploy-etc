@@ -62,11 +62,13 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy new Docker image" \
             --parameters 'commands=[
-                "rm -f /home/ubuntu/.env",
-                "echo '\''${{ secrets.ENV }}'\'' >> /home/ubuntu/.env",
-                "echo 'DOCKER_REPOSITORY=${{ secrets.DOCKER_REPOSITORY }}' >> /home/ubuntu/.env",
-                "echo 'NGINX_SSH_KEY=${{ secrets.NGINX_SSH_KEY }}' >> /home/ubuntu/.env",
-                "sudo chmod +x /home/ubuntu/deploy.sh",
-                "sudo /home/ubuntu/deploy.sh ${{ env.IMAGE_TAG }}"
+              "rm -f /home/ubuntu/.env",
+              "echo \"${{ secrets.ENV }}\" >> /home/ubuntu/.env",
+              "echo \"DOCKER_REPOSITORY=${{ secrets.DOCKER_REPOSITORY }}\" >> /home/ubuntu/.env",
+              "cat <<'EOF' >> /home/ubuntu/.env",
+              "NGINX_SSH_KEY=${{ secrets.NGINX_SSH_KEY }}",
+              "EOF",
+              "sudo chmod +x /home/ubuntu/deploy.sh",
+              "sudo /home/ubuntu/deploy.sh ${{ env.IMAGE_TAG }}"
             ]' \
             --region $AWS_REGION
