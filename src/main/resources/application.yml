@@ -18,21 +18,3 @@ spring:
       ddl-auto: update
 springdoc:
   use-fqn: true
-
----
-
-spring:
-  config:
-    activate:
-      on-profile: prod1
-server:
-  port: 8080
-
----
-
-spring:
-  config:
-    activate:
-      on-profile: prod2
-server:
-  port: 8081
