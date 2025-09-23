@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: prod1
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -20,3 +18,21 @@ spring:
       ddl-auto: update
 springdoc:
   use-fqn: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod1
+server:
+  port: 8080
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod2
+server:
+  port: 8081
