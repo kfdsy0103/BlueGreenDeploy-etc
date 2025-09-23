@@ -62,7 +62,9 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy new Docker image" \
             --parameters 'commands=[
-              "sudo chmod +x /home/ubuntu/deploy.sh",
-              "sudo /home/ubuntu/deploy.sh ${{ env.IMAGE_TAG }}"
+                "rm -f /home/ubuntu/.env",
+                "echo \"${{ secrets.ENV }}\" > /home/ubuntu/.env",
+                "sudo chmod +x /home/ubuntu/deploy.sh",
+                "sudo /home/ubuntu/deploy.sh ${{ env.IMAGE_TAG }}"
             ]' \
             --region $AWS_REGION

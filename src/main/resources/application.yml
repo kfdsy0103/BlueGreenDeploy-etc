@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://mysqldb.c3esu4c2kctu.ap-northeast-2.rds.amazonaws.com:3306/hello
-    username: admin
-    password: 12345678
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   sql:
     init:
@@ -18,3 +18,21 @@ spring:
       ddl-auto: update
 springdoc:
   use-fqn: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod1
+server:
+  port: 8080
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod2
+server:
+  port: 8081
