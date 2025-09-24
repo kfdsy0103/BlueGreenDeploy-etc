@@ -9,9 +9,12 @@ public class HelloController {
 	@GetMapping("/")
 	public String hello() {
 		return "<!DOCTYPE html>" +
-			"<html><head><title>따봉 냥이</title></head>" +
-			"<body><h1>귀여운 따봉 냥이를 드립니다, , ,</h1>" +
-			"<img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh6hzC1-4M-CArF60LxPBqSU2eI5ltueyDQk9kY0zZABJWbGd9zvGyHUI74w2vLsyNr0A&usqp=CAU'/>" +
-			"</body></html>";
+			"<html>" +
+			"<head><title>따봉 냥이야 고마워~~~</title></head>" +
+			"<body style='text-align: center;'>" +
+			"<h1>귀여운 따봉 냥이를 드립니다, , ,</h1>" +
+			"<img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh6hzC1-4M-CArF60LxPBqSU2eI5ltueyDQk9kY0zZABJWbGd9zvGyHUI74w2vLsyNr0A&usqp=CAU' style='display: block; margin: 0 auto;'/>" +
+			"</body>" +
+			"</html>";
 	}
 }
