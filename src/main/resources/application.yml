@@ -19,5 +19,7 @@ spring:
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
+  messages:
+    encoding: UTF-8
 springdoc:
   use-fqn: true
