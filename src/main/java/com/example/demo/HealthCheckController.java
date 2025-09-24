@@ -10,7 +10,7 @@ public class HealthCheckController {
 
 	@GetMapping("/health")
 	public String healthCheck() {
-		return "Current Time : " + LocalDateTime.now().toString();
+		return LocalDateTime.now().toString();
 	}
 }
 
