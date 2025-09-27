@@ -1,1 +1,4 @@
-# Nginx(Public) + SSL + CI/CD + Docker + Spring EC2(Private)
+# Nginx + Docker + SSM + Blue-Green Deploy
+
+## 아키텍쳐
+![architecture.png](architecture.png)
