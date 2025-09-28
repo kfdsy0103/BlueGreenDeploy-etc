@@ -8,6 +8,7 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -34,6 +35,7 @@ import org.springframework.ai.openai.audio.speech.SpeechResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.entity.ChatEntity;
 import com.example.demo.repository.ChatRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -81,6 +83,11 @@ public class OpenAIService {
 		// 보통은 시큐리티를 통해 유저에 대한 식별자 + a 로 id를 만듦.
 		String userId = "xxxjjhhh" + "_" + "1";
 
+		ChatEntity chatUserEntity = new ChatEntity();
+		chatUserEntity.setUserId(userId);
+		chatUserEntity.setType(MessageType.USER);
+		chatUserEntity.setContent(text);
+
 		// 챗 메모리를 관리해주는 클래스
 		ChatMemory chatMemory = MessageWindowChatMemory.builder()
 			.maxMessages(10)	// 10개의 데이터
@@ -109,13 +116,25 @@ public class OpenAIService {
 		return openAiChatModel.stream(prompt)
 			.mapNotNull(response -> {
 				String token = response.getResult().getOutput().getText();
-				responseBuffer.append(token);
-				return token;
+				if (token != null) {
+					responseBuffer.append(token);
+					return token;
+				}
+				return null;
 			})
 			// 응답 또한 저장해야 하므로
 			.doOnComplete(() -> {
 				chatMemory.add(userId, new AssistantMessage(responseBuffer.toString()));
 				chatMemoryRepository.saveAll(userId, chatMemory.get(userId));
+
+				// 전체 대화 저장용 (AI의 응답)
+				ChatEntity chatAssistantEntity = new ChatEntity();
+				chatAssistantEntity.setUserId(userId);
+				chatAssistantEntity.setType(MessageType.ASSISTANT);
+				chatAssistantEntity.setContent(responseBuffer.toString());
+
+				// 유저 질문 + AI 응답 저장
+				chatRepository.saveAll(List.of(chatUserEntity, chatAssistantEntity));
 			});
 	}
 
