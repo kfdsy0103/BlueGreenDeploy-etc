@@ -36,6 +36,7 @@ import org.springframework.ai.openai.audio.speech.SpeechResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.CityResponseDTO;
 import com.example.demo.entity.ChatEntity;
 import com.example.demo.repository.ChatRepository;
 
@@ -57,7 +58,7 @@ public class OpenAIService {
 	private final ChatClient chatClient;
 
 	// 1. Chat 모델 (Blocking)
-	public String generate(String text) {
+	public CityResponseDTO generate(String text) {
 
 		// 메시지
 		SystemMessage systemMessage = new SystemMessage("");
@@ -74,8 +75,9 @@ public class OpenAIService {
 		Prompt prompt = new Prompt(List.of(systemMessage, userMessage, assistantMessage), options);
 
 		// 요청 및 응답
-		ChatResponse response = openAiChatModel.call(prompt);
-		return response.getResult().getOutput().getText();
+		return chatClient.prompt(prompt)
+			.call()
+			.entity(CityResponseDTO.class);
 	}
 
 	// 1. Chat 모델 (Stream)
