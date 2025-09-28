@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.ai.audio.transcription.AudioTranscriptionPrompt;
 import org.springframework.ai.audio.transcription.AudioTranscriptionResponse;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
@@ -53,6 +54,7 @@ public class OpenAIService {
 
 	private final ChatMemoryRepository chatMemoryRepository;
 	private final ChatRepository chatRepository;
+	private final ChatClient chatClient;
 
 	// 1. Chat 모델 (Blocking)
 	public String generate(String text) {
@@ -83,6 +85,7 @@ public class OpenAIService {
 		// 보통은 시큐리티를 통해 유저에 대한 식별자 + a 로 id를 만듦.
 		String userId = "xxxjjhhh" + "_" + "1";
 
+		// 대화 저장용 (유저 질문)
 		ChatEntity chatUserEntity = new ChatEntity();
 		chatUserEntity.setUserId(userId);
 		chatUserEntity.setType(MessageType.USER);
@@ -113,29 +116,49 @@ public class OpenAIService {
 		StringBuilder responseBuffer = new StringBuilder();
 
 		// 요청 및 응답
-		return openAiChatModel.stream(prompt)
-			.mapNotNull(response -> {
-				String token = response.getResult().getOutput().getText();
-				if (token != null) {
-					responseBuffer.append(token);
-					return token;
-				}
-				return null;
+		return chatClient.prompt(prompt).stream()
+			.content()
+			.map(token -> {
+				responseBuffer.append(token);
+				return token;
 			})
-			// 응답 또한 저장해야 하므로
 			.doOnComplete(() -> {
+				// chatMemory 저장
 				chatMemory.add(userId, new AssistantMessage(responseBuffer.toString()));
 				chatMemoryRepository.saveAll(userId, chatMemory.get(userId));
 
-				// 전체 대화 저장용 (AI의 응답)
+				// 전체 대화 저장용
 				ChatEntity chatAssistantEntity = new ChatEntity();
 				chatAssistantEntity.setUserId(userId);
 				chatAssistantEntity.setType(MessageType.ASSISTANT);
 				chatAssistantEntity.setContent(responseBuffer.toString());
 
-				// 유저 질문 + AI 응답 저장
 				chatRepository.saveAll(List.of(chatUserEntity, chatAssistantEntity));
 			});
+
+		// return openAiChatModel.stream(prompt)
+		// 	.mapNotNull(response -> {
+		// 		String token = response.getResult().getOutput().getText();
+		// 		if (token != null) {
+		// 			responseBuffer.append(token);
+		// 			return token;
+		// 		}
+		// 		return null;
+		// 	})
+		// 	// 응답 또한 저장해야 하므로
+		// 	.doOnComplete(() -> {
+		// 		chatMemory.add(userId, new AssistantMessage(responseBuffer.toString()));
+		// 		chatMemoryRepository.saveAll(userId, chatMemory.get(userId));
+		//
+		// 		// 전체 대화 저장용 (AI의 응답)
+		// 		ChatEntity chatAssistantEntity = new ChatEntity();
+		// 		chatAssistantEntity.setUserId(userId);
+		// 		chatAssistantEntity.setType(MessageType.ASSISTANT);
+		// 		chatAssistantEntity.setContent(responseBuffer.toString());
+		//
+		// 		// 유저 질문 + AI 응답 저장
+		// 		chatRepository.saveAll(List.of(chatUserEntity, chatAssistantEntity));
+		// 	});
 	}
 
 	// 2. 임베딩 모델

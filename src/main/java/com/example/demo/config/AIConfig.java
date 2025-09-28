@@ -1,8 +1,10 @@
 package com.example.demo.config;
 
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,5 +25,10 @@ public class AIConfig {
 			.jdbcTemplate(jdbcTemplate)
 			.transactionManager(transactionManager)
 			.build();
+	}
+
+	@Bean
+	public ChatClient openAiChatClient(OpenAiChatModel chatModel) {
+		return ChatClient.create(chatModel);
 	}
 }
