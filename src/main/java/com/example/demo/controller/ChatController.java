@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.demo.dto.CityResponseDTO;
 import com.example.demo.entity.ChatEntity;
 import com.example.demo.service.ChatService;
 import com.example.demo.service.OpenAIService;
@@ -32,7 +33,7 @@ public class ChatController {
 	// Blocking(non-stream) 형태의 서비스 호출
 	@ResponseBody
 	@PostMapping("/chat")
-	public String chat(@RequestBody Map<String, String> body) {	// Map이 아닌, DTO로 리팩토링
+	public CityResponseDTO chat(@RequestBody Map<String, String> body) {	// Map이 아닌, DTO로 리팩토링
 		return openAIService.generate(body.get("text"));
 	}
 
