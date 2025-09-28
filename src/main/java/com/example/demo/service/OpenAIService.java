@@ -118,7 +118,9 @@ public class OpenAIService {
 		StringBuilder responseBuffer = new StringBuilder();
 
 		// 요청 및 응답
-		return chatClient.prompt(prompt).stream()
+		return chatClient.prompt(prompt)
+			.tools(new ChatTools())
+			.stream()
 			.content()
 			.map(token -> {
 				responseBuffer.append(token);
