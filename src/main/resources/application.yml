@@ -10,15 +10,15 @@ spring:
         use_sql_comments: true
     hibernate:
       ddl-auto: update
-    ai:
-      openai:
-        api-key: ${OPENAI_API_KEY}
-      chat:
-        memory:
-          repository:
-            jdbc:
-              initialize-schema: never
-    messages:
-      encoding: UTF-8
-  springdoc:
-    use-fqn: true
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: never
+  messages:
+    encoding: UTF-8
+springdoc:
+  use-fqn: true

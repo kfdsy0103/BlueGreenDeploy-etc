@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.springframework.ai.audio.transcription.AudioTranscriptionPrompt;
 import org.springframework.ai.audio.transcription.AudioTranscriptionResponse;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.ChatMemoryRepository;
+import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -31,6 +34,8 @@ import org.springframework.ai.openai.audio.speech.SpeechResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.repository.ChatRepository;
+
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 
@@ -43,6 +48,9 @@ public class OpenAIService {
 	private final OpenAiImageModel openAiImageModel;
 	private final OpenAiAudioSpeechModel openAiAudioSpeechModel;
 	private final OpenAiAudioTranscriptionModel openAiAudioTranscriptionModel;
+
+	private final ChatMemoryRepository chatMemoryRepository;
+	private final ChatRepository chatRepository;
 
 	// 1. Chat 모델 (Blocking)
 	public String generate(String text) {
@@ -69,10 +77,18 @@ public class OpenAIService {
 	// 1. Chat 모델 (Stream)
 	public Flux<String> generateStream(String text) {
 
-		// 메시지
-		SystemMessage systemMessage = new SystemMessage("");
-		UserMessage userMessage = new UserMessage(text);
-		AssistantMessage assistantMessage = new AssistantMessage("");
+		// 유저&페이지별 ChatMemory를 관리하기 위한 key (우선은 명시적으로)
+		// 보통은 시큐리티를 통해 유저에 대한 식별자 + a 로 id를 만듦.
+		String userId = "xxxjjhhh" + "_" + "1";
+
+		// 챗 메모리를 관리해주는 클래스
+		ChatMemory chatMemory = MessageWindowChatMemory.builder()
+			.maxMessages(10)	// 10개의 데이터
+			.chatMemoryRepository(chatMemoryRepository)
+			.build();
+
+		// 신규 메시지 추가 (내부적으로 repository saveAll() 호출함)
+		chatMemory.add(userId, new UserMessage(text));
 
 		// 옵션 (어떤 모델을 사용할지 등...)
 		OpenAiChatOptions options = OpenAiChatOptions.builder()
@@ -81,11 +97,26 @@ public class OpenAIService {
 			.build();
 
 		// 프롬프트
-		Prompt prompt = new Prompt(List.of(systemMessage, userMessage, assistantMessage), options);
+		// Prompt prompt = new Prompt(List.of(systemMessage, userMessage, assistantMessage), options);
+		// chatMemory.get()은 내부적으로 List<Message>를 반환
+		Prompt prompt = new Prompt(chatMemory.get(userId), options);
+
+		// 스트림 방식이므로 잘린 토큰을 다시 모아 챗 메모리에 저장해야 함.
+		// 가변 길이 문자열을 다루기 위한 클래스 사용
+		StringBuilder responseBuffer = new StringBuilder();
 
 		// 요청 및 응답
 		return openAiChatModel.stream(prompt)
-			.mapNotNull(response -> response.getResult().getOutput().getText());
+			.mapNotNull(response -> {
+				String token = response.getResult().getOutput().getText();
+				responseBuffer.append(token);
+				return token;
+			})
+			// 응답 또한 저장해야 하므로
+			.doOnComplete(() -> {
+				chatMemory.add(userId, new AssistantMessage(responseBuffer.toString()));
+				chatMemoryRepository.saveAll(userId, chatMemory.get(userId));
+			});
 	}
 
 	// 2. 임베딩 모델
