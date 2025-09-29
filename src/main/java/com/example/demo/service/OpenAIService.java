@@ -110,8 +110,8 @@ public class OpenAIService {
 
 		// 옵션 (어떤 모델을 사용할지 등...)
 		OpenAiChatOptions options = OpenAiChatOptions.builder()
-			.model("gpt-4.1-mini")
-			.temperature(0.7)
+			.model("gpt-5")
+			.temperature(1.0)
 			.build();
 
 		// RAG
