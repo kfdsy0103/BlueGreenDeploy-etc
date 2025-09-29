@@ -20,5 +20,7 @@ spring:
             initialize-schema: never
   messages:
     encoding: UTF-8
+  elasticsearch:
+    uris: http://localhost:9200 # docker
 springdoc:
   use-fqn: true

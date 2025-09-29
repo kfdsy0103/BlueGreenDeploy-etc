@@ -53,6 +53,12 @@ dependencies {
 
 	// JPA 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// Advisor VectorStore 의존성
+	implementation 'org.springframework.ai:spring-ai-advisors-vector-store'
+
+	// 벡터 기반 ElasticSearch 의존성
+	implementation 'org.springframework.ai:spring-ai-starter-vector-store-elasticsearch'
 }
 
 dependencyManagement {

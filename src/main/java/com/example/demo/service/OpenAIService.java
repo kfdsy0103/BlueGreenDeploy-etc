@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.ai.audio.transcription.AudioTranscriptionPrompt;
 import org.springframework.ai.audio.transcription.AudioTranscriptionResponse;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
@@ -33,6 +35,8 @@ import org.springframework.ai.openai.OpenAiImageOptions;
 import org.springframework.ai.openai.api.OpenAiAudioApi;
 import org.springframework.ai.openai.audio.speech.SpeechPrompt;
 import org.springframework.ai.openai.audio.speech.SpeechResponse;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +60,8 @@ public class OpenAIService {
 	private final ChatMemoryRepository chatMemoryRepository;
 	private final ChatRepository chatRepository;
 	private final ChatClient chatClient;
+
+	private final VectorStore elasticsearchVectorStore;
 
 	// 1. Chat 모델 (Blocking)
 	public CityResponseDTO generate(String text) {
@@ -108,6 +114,11 @@ public class OpenAIService {
 			.temperature(0.7)
 			.build();
 
+		// RAG
+		Advisor ragAdvisor = QuestionAnswerAdvisor.builder(elasticsearchVectorStore)
+			.searchRequest(SearchRequest.builder().similarityThreshold(0.8d).topK(6).build())
+			.build();
+
 		// 프롬프트
 		// Prompt prompt = new Prompt(List.of(systemMessage, userMessage, assistantMessage), options);
 		// chatMemory.get()은 내부적으로 List<Message>를 반환
@@ -120,6 +131,7 @@ public class OpenAIService {
 		// 요청 및 응답
 		return chatClient.prompt(prompt)
 			.tools(new ChatTools())
+			.advisors(ragAdvisor)
 			.stream()
 			.content()
 			.map(token -> {
