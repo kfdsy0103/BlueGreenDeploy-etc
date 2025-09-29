@@ -30,5 +30,6 @@ public class VectorStoreConfig {
 			.initializeSchema(true)
 			.batchingStrategy(new TokenCountBatchingStrategy())
 			.build();
+
 	}
 }
